@@ -31,6 +31,7 @@ import org.lwjgl.opengl.GL11;
  * @author nemes
  *
  */
+
 public class GuessTheNumber {
 
 	private static boolean isRunning = true;
@@ -86,7 +87,6 @@ public class GuessTheNumber {
 		};
 		
 		try {
-			frame.setResizable(false);
 			frame.getContentPane().setLayout(layout);
 			frame.setPreferredSize(new Dimension(800, 450));
 			frame.setTitle("Guess the Number");
@@ -119,6 +119,9 @@ public class GuessTheNumber {
 		setDialog(1);
 		
 		while (isRunning()) {
+			if (Display.wasResized()) {
+				reinitOpenGL();
+			}
 			render();
 			fps++;
 			if (NEXT_SECOND < System.currentTimeMillis()) {
@@ -145,13 +148,13 @@ public class GuessTheNumber {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, bg.id);
 		GL11.glBegin(GL11.GL_QUADS);
 		GL11.glTexCoord2d(0, 0);
-		GL11.glVertex2d(0, 0);
+		addPoint(0, 0);
 		GL11.glTexCoord2d(0, 1);
-		GL11.glVertex2d(0, 430);
+		addPoint(0, 430);
 		GL11.glTexCoord2d(1, 1);
-		GL11.glVertex2d(800, 430);
+		addPoint(800, 430);
 		GL11.glTexCoord2d(1, 0);
-		GL11.glVertex2d(800, 0);
+		addPoint(800, 0);
 		GL11.glEnd();
 		
 		int alonzoX = 300;
@@ -160,13 +163,13 @@ public class GuessTheNumber {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, alonzo.id);
 		GL11.glBegin(GL11.GL_QUADS);
 		GL11.glTexCoord2d(0, 0);
-		GL11.glVertex2d(alonzoX, alonzoY);
+		addPoint(alonzoX, alonzoY);
 		GL11.glTexCoord2d(0, 1);
-		GL11.glVertex2d(alonzoX, alonzoY + 200);
+		addPoint(alonzoX, alonzoY + 200);
 		GL11.glTexCoord2d(1, 1);
-		GL11.glVertex2d(alonzoX + 150, alonzoY + 200);
+		addPoint(alonzoX + 150, alonzoY + 200);
 		GL11.glTexCoord2d(1, 0);
-		GL11.glVertex2d(alonzoX + 150, alonzoY);
+		addPoint(alonzoX + 150, alonzoY);
 		GL11.glEnd();
 		
 		if (getDialog() > 0) {
@@ -181,13 +184,13 @@ public class GuessTheNumber {
 			}
 			GL11.glBegin(GL11.GL_QUADS);
 			GL11.glTexCoord2d(0, 0);
-			GL11.glVertex2d(alonzoX, alonzoY);
+			addPoint(alonzoX, alonzoY);
 			GL11.glTexCoord2d(0, 1);
-			GL11.glVertex2d(alonzoX, alonzoY + 80);
+			addPoint(alonzoX, alonzoY + 80);
 			GL11.glTexCoord2d(1, 1);
-			GL11.glVertex2d(alonzoX + 190, alonzoY + 80);
+			addPoint(alonzoX + 190, alonzoY + 80);
 			GL11.glTexCoord2d(1, 0);
-			GL11.glVertex2d(alonzoX + 190, alonzoY);
+			addPoint(alonzoX + 190, alonzoY);
 			GL11.glEnd();
 		}
 		
@@ -206,6 +209,18 @@ public class GuessTheNumber {
 		 GL11.glEnable(GL11.GL_ALPHA_TEST);
 		 GL11.glEnable(GL11.GL_CULL_FACE);
 		 GL11.glCullFace(GL11.GL_BACK);
+	}
+	
+	public static void reinitOpenGL() {
+		 GL11.glViewport(0, 0, Display.getWidth(), Display.getHeight());
+		 GL11.glMatrixMode(GL11.GL_PROJECTION);
+		 GL11.glLoadIdentity();
+		 GL11.glOrtho(0.0f, Display.getWidth(), Display.getHeight(), 0.0f, -1.0f, 1.0f);
+		 GL11.glMatrixMode(GL11.GL_MODELVIEW);
+	}
+	
+	private static void addPoint(double x, double y) {
+		GL11.glVertex2d((x / 800.0d) * Display.getWidth(), (y / 430.0f) * Display.getHeight());
 	}
 	
 	public static synchronized boolean isRunning() {
