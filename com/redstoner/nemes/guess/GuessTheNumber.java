@@ -34,9 +34,9 @@ import org.lwjgl.opengl.GL11;
 
 public class GuessTheNumber {
 
-	private static boolean isRunning = true;
+	private static volatile boolean isRunning = true;
 	private static Texture bg, alonzo, large, small, correct, guess;
-	private static int currentDialog = 0;
+	private static volatile int currentDialog = 0;
 	private static int number;
 	
 	public static void main(String[] args) {
@@ -50,7 +50,7 @@ public class GuessTheNumber {
 			public void windowActivated(WindowEvent arg0) {}
 			public void windowClosed(WindowEvent arg0) {}
 			public void windowClosing(WindowEvent arg0) {
-				setStopping();
+				isRunning = false;
 			}
 			public void windowDeactivated(WindowEvent arg0) {}
 			public void windowDeiconified(WindowEvent arg0) {}
@@ -62,13 +62,17 @@ public class GuessTheNumber {
 
 			public void actionPerformed(ActionEvent arg0) {
 				if (num.getText().equals("")) {
-					setDialog(1);
+					currentDialog = 1;
 					number = rand.nextInt(100);
 					return;
 				}
 				int i = 0;
 				if (num.getText().equals("logalis1337")) {
-					setDialog(5);
+					currentDialog = 5;
+				}
+				if (num.getText().equals("exit")) {
+					isRunning = false;
+					return;
 				}
 				try{
 					i = Integer.parseInt(num.getText());
@@ -77,11 +81,11 @@ public class GuessTheNumber {
 					return;
 				}
 				if (i == number) {
-					setDialog(2);
+					currentDialog = 2;
 				}else if (i > number) {
-					setDialog(3);
+					currentDialog = 3;
 				}else if (i < number) {
-					setDialog(4);
+					currentDialog = 4;
 				}
 			}
 		};
@@ -116,9 +120,9 @@ public class GuessTheNumber {
 		long NEXT_SECOND = System.currentTimeMillis();
 		int fps = 0;
 		number = rand.nextInt(100);
-		setDialog(1);
+		currentDialog = 1;
 		
-		while (isRunning()) {
+		while (isRunning) {
 			if (Display.wasResized()) {
 				reinitOpenGL();
 			}
@@ -172,11 +176,11 @@ public class GuessTheNumber {
 		addPoint(alonzoX + 150, alonzoY);
 		GL11.glEnd();
 		
-		if (getDialog() > 0) {
+		if (currentDialog > 0) {
 			alonzoX += 115;
 			alonzoY += -10;
 			
-			switch (getDialog()) {
+			switch (currentDialog) {
 			case 1: GL11.glBindTexture(GL11.GL_TEXTURE_2D, guess.id); break;
 			case 2: GL11.glBindTexture(GL11.GL_TEXTURE_2D, correct.id); break;
 			case 3: GL11.glBindTexture(GL11.GL_TEXTURE_2D, large.id); break;
@@ -221,22 +225,6 @@ public class GuessTheNumber {
 	
 	private static void addPoint(double x, double y) {
 		GL11.glVertex2d((x / 800.0d) * Display.getWidth(), (y / 430.0f) * Display.getHeight());
-	}
-	
-	public static synchronized boolean isRunning() {
-		return isRunning;
-	}
-	
-	public static synchronized void setStopping() {
-		isRunning = false;
-	}
-
-	public static synchronized int getDialog() {
-		return currentDialog;
-	}
-
-	public static synchronized void setDialog(int d) {
-		currentDialog = d;
 	}
 	
 	public static Texture loadTexture(String fileName) {
